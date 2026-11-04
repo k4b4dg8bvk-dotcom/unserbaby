@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2a2340">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Unser Baby">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Unser Baby</title>
+<style>
+  :root {
+    --bg: #f7f1ea;
+    --panel: #ffffff;
+    --ink: #2a2340;
+    --muted: #8a7f99;
+    --line: rgba(42, 35, 64, 0.10);
+    --mine: #d9f2e1;
+    --other: #ffffff;
+    --baby: #ffe3ec;
+    --baby-ink: #a83e64;
+    --gold: #c99a3c;
+    --accent: #e0789a;
+    --sky: #5b9bd5;
+    --head1: #3a2f5c;
+    --head2: #6b4b8a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17141f;
+      --panel: #221d2f;
+      --ink: #f3ecf7;
+      --muted: #a99fbb;
+      --line: rgba(255, 255, 255, 0.10);
+      --mine: #2e4a3a;
+      --other: #2a2438;
+      --baby: #4a2537;
+      --baby-ink: #ffb3cb;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, "Noto Sans", Arial, sans-serif;
+    background: var(--bg); color: var(--ink);
+    display: flex; flex-direction: column; height: 100dvh; overflow: hidden;
+  }
+
+  header {
+    flex: none; padding: calc(12px + env(safe-area-inset-top)) 16px 12px;
+    background: linear-gradient(135deg, var(--head1), var(--head2)); color: #fff;
+    display: flex; align-items: center; gap: 12px;
+  }
+  header .face { width: 46px; height: 46px; flex: none; }
+  header .mid { flex: 1; min-width: 0; }
+  header .t2 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  header .t1 { font-size: 18px; font-weight: 700; }
+  header .t2 { font-size: 13px; opacity: .85; margin-top: 2px; }
+  header .days { flex: none; text-align: right; }
+  header .days b { display: block; font-size: 26px; line-height: 1; color: #ffd98a; }
+  header .days span { font-size: 11px; opacity: .8; letter-spacing: 1px; text-transform: uppercase; }
+
+  #list { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 12px 8px; display: flex; flex-direction: column; gap: 8px; -webkit-overflow-scrolling: touch; }
+  .day { align-self: center; font-size: 12px; color: var(--muted); background: var(--panel); padding: 4px 12px; border-radius: 99px; margin: 6px 0; }
+  .msg { max-width: 82%; padding: 8px 12px 6px; border-radius: 16px; background: var(--other); align-self: flex-start;
+         box-shadow: 0 1px 1px rgba(0,0,0,.06); border-bottom-left-radius: 4px; overflow-wrap: anywhere; font-size: 16px; line-height: 1.35; }
+  .msg .who { font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 2px; }
+  .msg .tm { font-size: 11px; color: var(--muted); text-align: right; margin-top: 2px; }
+  .msg.mine { align-self: flex-end; background: var(--mine); border-bottom-left-radius: 16px; border-bottom-right-radius: 4px; }
+  .msg.mine .who { display: none; }
+  .msg.baby { background: var(--baby); color: var(--baby-ink); display: flex; gap: 8px; align-items: flex-start; }
+  .msg.baby svg { width: 30px; height: 30px; flex: none; }
+  .msg.baby .who { color: var(--baby-ink); }
+  .msg.tip { border: 1.5px dashed var(--gold); }
+  .msg.tip .who { color: var(--gold); }
+  .msg.sticker { background: none; box-shadow: none; font-size: 44px; padding: 0 4px; }
+  .msg.ask .q { font-size: 11px; color: var(--accent); font-weight: 700; }
+  .typing { align-self: flex-start; font-size: 13px; color: var(--baby-ink); background: var(--baby); padding: 6px 12px; border-radius: 99px; display: none; }
+  .typing.on { display: block; }
+  .empty { margin: auto; text-align: center; color: var(--muted); font-size: 15px; padding: 30px; }
+
+  footer { flex: none; background: var(--panel); border-top: 1px solid var(--line); padding: 8px 10px calc(8px + env(safe-area-inset-bottom)); }
+  .stickers { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; }
+  .stickers button { flex: none; font-size: 22px; background: var(--bg); border: 0; border-radius: 12px; padding: 4px 9px; cursor: pointer; }
+  .stickers .tipbtn { font-size: 14px; font-weight: 700; color: var(--gold); padding: 6px 12px; }
+  .row { display: flex; gap: 8px; align-items: flex-end; }
+  textarea {
+    flex: 1; resize: none; max-height: 120px; min-height: 42px; font: inherit; font-size: 16px; color: var(--ink);
+    background: var(--bg); border: 1px solid var(--line); border-radius: 21px; padding: 10px 14px; outline: none;
+  }
+  .send, .ask { flex: none; height: 42px; border: 0; border-radius: 21px; font-weight: 700; font-size: 15px; cursor: pointer; padding: 0 14px; }
+  .send { background: var(--head2); color: #fff; }
+  .ask { background: var(--baby); color: var(--baby-ink); }
+  .note { font-size: 11px; color: var(--muted); text-align: center; margin-top: 6px; }
+
+  .modal { position: fixed; inset: 0; background: rgba(20, 15, 30, .55); display: none; align-items: flex-end; justify-content: center; z-index: 10; }
+  .modal.on { display: flex; }
+  .sheet { width: 100%; max-width: 520px; background: var(--panel); border-radius: 22px 22px 0 0; padding: 20px 18px calc(20px + env(safe-area-inset-bottom)); }
+  .sheet h2 { font-size: 20px; margin-bottom: 4px; }
+  .sheet p { font-size: 14px; color: var(--muted); margin-bottom: 14px; }
+  .sheet label { display: block; font-size: 13px; font-weight: 700; color: var(--muted); margin: 14px 0 6px; text-transform: uppercase; letter-spacing: 1px; }
+  .sheet input[type=text], .sheet input[type=date] { width: 100%; font: inherit; font-size: 17px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+  .gbtns { display: flex; gap: 10px; }
+  .gbtns button { flex: 1; font-size: 18px; padding: 14px 0; border-radius: 14px; border: 2px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer; }
+  .gbtns button.on[data-g=Junge] { border-color: var(--sky); background: rgba(91,155,213,.15); }
+  .gbtns button.on[data-g=Mädchen] { border-color: var(--accent); background: rgba(224,120,154,.15); }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  .wv { font-size: 22px; font-weight: 700; text-align: center; margin-top: 4px; }
+  .sheet .actions { display: flex; gap: 10px; margin-top: 20px; }
+  .sheet .actions button { flex: 1; height: 48px; border-radius: 14px; border: 0; font-size: 16px; font-weight: 700; cursor: pointer; }
+  .primary { background: var(--head2); color: #fff; }
+  .secondary { background: var(--bg); color: var(--ink); }
+  #nolink { margin: auto; padding: 30px; text-align: center; font-size: 16px; color: var(--muted); display: none; }
+</style>
+</head>
+<body>
+<header>
+  <svg class="face" viewBox="0 0 100 100" aria-hidden="true">
+    <circle cx="50" cy="54" r="40" fill="#ffd9c2"/><circle cx="13" cy="54" r="9" fill="#ffd0b5"/><circle cx="87" cy="54" r="9" fill="#ffd0b5"/>
+    <path d="M44 16 q6 -10 12 0 q-6 4 -12 0z" fill="#e9b48f"/>
+    <circle cx="36" cy="50" r="4.5" fill="#2a2340"/><circle cx="64" cy="50" r="4.5" fill="#2a2340"/>
+    <circle cx="28" cy="63" r="6" fill="#f7a8b8" opacity=".7"/><circle cx="72" cy="63" r="6" fill="#f7a8b8" opacity=".7"/>
+    <path d="M42 66 q8 8 16 0" stroke="#2a2340" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </svg>
+  <div class="mid">
+    <div class="t1">Unser Baby 💕</div>
+    <div class="t2" id="sub">Familien-Chat</div>
+  </div>
+  <div class="days"><b id="days">–</b><span>Tage</span></div>
+</header>
+
+<div id="list"><div class="typing" id="typing">👶 Baby tippt …</div></div>
+<div id="nolink">Bitte öffne den Chat über den Link, den du von Ahmed bekommen hast. 💌</div>
+
+<footer id="footer">
+  <div class="stickers" id="stickers">
+    <button class="tipbtn" id="tipOpen">🏆 Tippen</button>
+  </div>
+  <div class="row">
+    <textarea id="text" rows="1" placeholder="Nachricht …"></textarea>
+    <button class="ask" id="askBtn" title="Das Baby fragen">👶 Fragen</button>
+    <button class="send" id="sendBtn">Senden</button>
+  </div>
+  <div class="note">👶 Das Baby antwortet, wenn bei Ahmed &amp; Tanja der Fernseher an ist.</div>
+</footer>
+
+<div class="modal" id="nameModal"><div class="sheet">
+  <h2>Hallo! 👋 Wie heißt du?</h2>
+  <p>Dein Name erscheint bei deinen Nachrichten – und auf dem Fernseher von Ahmed &amp; Tanja.</p>
+  <input type="text" id="nameInput" maxlength="24" placeholder="z. B. Oma Fatma">
+  <div class="actions"><button class="primary" id="nameSave">Los geht's</button></div>
+</div></div>
+
+<div class="modal" id="tipModal"><div class="sheet">
+  <h2>🏆 Dein Tipp</h2>
+  <p>Wer am nächsten dran ist, gewinnt – die Auflösung gibt's am Geburtstag auf dem Fernseher!</p>
+  <label>Junge oder Mädchen?</label>
+  <div class="gbtns"><button data-g="Junge">👦 Junge</button><button data-g="Mädchen">👧 Mädchen</button></div>
+  <label>Geburtstag</label>
+  <input type="date" id="tipDate" min="2026-12-10" max="2027-02-15" value="2027-01-16">
+  <label>Gewicht</label>
+  <input type="range" id="tipWeight" min="2000" max="4800" step="50" value="3300">
+  <div class="wv" id="tipWv">3,30 kg</div>
+  <div class="actions"><button class="secondary" id="tipCancel">Abbrechen</button><button class="primary" id="tipSend">Tipp abgeben</button></div>
+</div></div>
+
+<script>
+  // The ntfy topic is passed in the link (#chat=...), never stored in this public code.
+  var TOPIC = (location.hash.match(/chat=([A-Za-z0-9_-]{8,64})/) || [])[1] || (function () { try { return localStorage.getItem('ub.topic'); } catch (e) { return null; } })();
+  var PRIVATE = /[#&]privat=1/.test(location.hash);
+  var DUE = new Date(2027, 0, 16);
+  var LMP = new Date(DUE.getTime() - 280 * 864e5);
+  var FRUITS = { 28: 'eine Aubergine', 29: 'ein Butternutkürbis', 30: 'ein Weißkohl', 31: 'eine Kokosnuss', 32: 'ein Chinakohl', 33: 'eine Ananas', 34: 'eine Honigmelone', 35: 'eine Honigmelone', 36: 'ein Römersalat', 37: 'ein Mangold-Bund', 38: 'eine Stange Lauch', 39: 'eine kleine Wassermelone', 40: 'ein Kürbis' };
+  var STICKERS = ['❤️', '🥰', '👶', '🎉', '😂', '🙏', '🤲', '👏'];
+  var BABY_SVG = document.querySelector('header .face').outerHTML.replace('class="face"', '');
+
+  function $(id) { return document.getElementById(id); }
+  function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) {} return null; }
+  function esc(x) { return String(x).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+
+  // ---------- header ----------
+  function header() {
+    var now = new Date(), days = Math.max(0, Math.floor((DUE - now) / 864e5));
+    var w = Math.floor((now - LMP) / 864e5 / 7);
+    $('days').textContent = days;
+    $('sub').textContent = 'Woche ' + Math.min(w + 1, 42) + ' · so groß wie ' + (FRUITS[Math.max(28, Math.min(40, w))] || 'ein kleines Wunder');
+  }
+  header(); setInterval(header, 60000);
+
+  if (!TOPIC) {
+    $('list').style.display = 'none'; $('footer').style.display = 'none'; $('nolink').style.display = 'block';
+  } else {
+    if (!/chat=/.test(location.hash)) PRIVATE = store('ub.private.' + TOPIC) === '1';
+    store('ub.private.' + TOPIC, PRIVATE ? '1' : '0');
+    store('ub.topic', TOPIC);
+    if (PRIVATE) {
+      document.querySelector('header .t1').textContent = 'Ahmed & Tanja 💕';
+      $('tipOpen').style.display = 'none';
+      $('askBtn').style.display = 'none';
+      document.querySelector('.note').textContent = '🔒 Privat – nur ihr zwei. Ahmeds Nachrichten erscheinen bei Tanja groß auf dem Fernseher.';
+      document.title = 'Ahmed & Tanja';
+    }
+    if (location.hash) history.replaceState(null, '', location.pathname + location.hash);
+    start();
+  }
+
+  function start() {
+    var NAME = store('ub.name') || '';
+    var MSGS = [];
+    try { MSGS = JSON.parse(store('ub.msgs.' + TOPIC) || '[]') || []; } catch (e) { MSGS = []; }
+    var SEEN = {};
+    MSGS.forEach(function (m) { SEEN[m.id] = 1; });
+
+    // ---------- name ----------
+    function askName() { $('nameInput').value = NAME; $('nameModal').className = 'modal on'; setTimeout(function () { $('nameInput').focus(); }, 50); }
+    $('nameSave').onclick = function () {
+      var v = $('nameInput').value.trim().slice(0, 24);
+      if (!v) return;
+      NAME = v; store('ub.name', v); $('nameModal').className = 'modal'; render();
+    };
+    $('nameInput').onkeydown = function (e) { if (e.key === 'Enter') $('nameSave').onclick(); };
+    if (!NAME) askName();
+    $('sub').onclick = askName;
+
+    // ---------- rendering ----------
+    function dayLabel(t) {
+      var d = new Date(t), today = new Date(), y = new Date(Date.now() - 864e5);
+      if (d.toDateString() === today.toDateString()) return 'Heute';
+      if (d.toDateString() === y.toDateString()) return 'Gestern';
+      return d.getDate() + '.' + (d.getMonth() + 1) + '.' + d.getFullYear();
+    }
+    function render() {
+      var list = $('list'), typing = $('typing');
+      var atBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 80;
+      var h = '', lastDay = '';
+      if (!MSGS.length) h = '<div class="empty">Noch keine Nachrichten.<br>Schreib als Erstes etwas Liebes – oder frag das Baby! 👶</div>';
+      MSGS.forEach(function (m) {
+        var dl = dayLabel(m.t);
+        if (dl !== lastDay) { h += '<div class="day">' + dl + '</div>'; lastDay = dl; }
+        var tags = m.tags || [], d = new Date(m.t), tm = pad(d.getHours()) + ':' + pad(d.getMinutes());
+        var isBaby = tags.indexOf('babybot') >= 0, mine = !isBaby && m.n && m.n === NAME;
+        var isSticker = /^(\p{Extended_Pictographic}|️|‍){1,3}$/u.test(m.m);
+        var cls = 'msg' + (isBaby ? ' baby' : '') + (mine ? ' mine' : '') + (/^\s*tipp\b/i.test(m.m) ? ' tip' : '') + (isSticker ? ' sticker' : '') + (tags.indexOf('askbaby') >= 0 ? ' ask' : '');
+        var body = (tags.indexOf('askbaby') >= 0 ? '<div class="q">👶 an das Baby</div>' : '') + esc(m.m);
+        if (isSticker) { h += '<div class="' + cls + '">' + esc(m.m) + '</div>'; return; }
+        h += '<div class="' + cls + '">' + (isBaby ? BABY_SVG : '') + '<div>' +
+          '<div class="who">' + esc(isBaby ? 'Baby' : (m.n || 'Familie')) + '</div>' + body + '<div class="tm">' + tm + '</div></div></div>';
+      });
+      list.innerHTML = h;
+      list.appendChild(typing);
+      if (atBottom || render.first !== false) { list.scrollTop = list.scrollHeight; render.first = false; }
+    }
+
+    function add(m) {
+      if (!m || m.event !== 'message' || !m.message || SEEN[m.id]) return;
+      SEEN[m.id] = 1;
+      MSGS.push({ id: m.id, t: (m.time || Date.now() / 1000) * 1000, n: m.title || '', m: m.message, tags: m.tags || [] });
+      MSGS.sort(function (a, b) { return a.t - b.t; });
+      if (MSGS.length > 500) MSGS = MSGS.slice(-500);
+      store('ub.msgs.' + TOPIC, JSON.stringify(MSGS));
+      if ((m.tags || []).indexOf('babybot') >= 0) typingOff();
+      render();
+    }
+
+    // ---------- live feed (last 12h + live) ----------
+    render();
+    fetch('https://ntfy.sh/' + TOPIC + '/json?poll=1&since=12h').then(function (r) { return r.text(); }).then(function (txt) {
+      txt.split('\n').forEach(function (line) { if (line.trim()) { try { add(JSON.parse(line)); } catch (e) {} } });
+    }).catch(function () {});
+    (function connect() {
+      var es = new EventSource('https://ntfy.sh/' + TOPIC + '/sse');
+      es.onmessage = function (e) { try { add(JSON.parse(e.data)); } catch (err) {} };
+    })();
+
+    // ---------- sending ----------
+    function publish(text, tags) {
+      if (!NAME) { askName(); return Promise.resolve(false); }
+      return fetch('https://ntfy.sh/', {
+        method: 'POST',
+        body: JSON.stringify({ topic: TOPIC, message: text, title: NAME, tags: tags || [] })
+      }).then(function (r) { return r.ok; }).catch(function () { alert('Senden hat nicht geklappt – bitte nochmal versuchen.'); return false; });
+    }
+    var typingT = 0;
+    function typingOn() { $('typing').className = 'typing on'; render(); clearTimeout(typingT); typingT = setTimeout(typingOff, 60000); }
+    function typingOff() { $('typing').className = 'typing'; clearTimeout(typingT); }
+    function sendText(askBaby) {
+      var t = $('text').value.trim();
+      if (!t) { $('text').focus(); return; }
+      publish(t, askBaby ? ['askbaby'] : []).then(function (ok) {
+        if (!ok) return;
+        $('text').value = ''; grow();
+        if (askBaby || /^(ahmed|papa|baba)\b/i.test(NAME)) typingOn();
+      });
+    }
+    $('sendBtn').onclick = function () { sendText(false); };
+    $('askBtn').onclick = function () { sendText(true); };
+    function grow() { var t = $('text'); t.style.height = 'auto'; t.style.height = Math.min(120, t.scrollHeight) + 'px'; }
+    $('text').oninput = grow;
+
+    STICKERS.forEach(function (s) {
+      var b = document.createElement('button');
+      b.textContent = s;
+      b.onclick = function () { publish(s); };
+      $('stickers').appendChild(b);
+    });
+
+    // ---------- tip form ----------
+    var gender = '';
+    var gb = document.querySelectorAll('.gbtns button');
+    Array.prototype.forEach.call(gb, function (b) {
+      b.onclick = function () { gender = b.getAttribute('data-g'); Array.prototype.forEach.call(gb, function (x) { x.className = x === b ? 'on' : ''; }); };
+    });
+    function wv() { $('tipWv').textContent = (+$('tipWeight').value / 1000).toFixed(2).replace('.', ',') + ' kg'; }
+    $('tipWeight').oninput = wv; wv();
+    $('tipOpen').onclick = function () { if (!NAME) { askName(); return; } $('tipModal').className = 'modal on'; };
+    $('tipCancel').onclick = function () { $('tipModal').className = 'modal'; };
+    $('tipSend').onclick = function () {
+      if (!gender) { alert('Bitte Junge oder Mädchen wählen 😉'); return; }
+      var d = $('tipDate').value.split('-');
+      var text = 'Tipp: ' + gender + ', ' + d[2] + '.' + d[1] + '.' + d[0] + ', ' + $('tipWeight').value + ' g';
+      publish(text).then(function (ok) { if (ok) $('tipModal').className = 'modal'; });
+    };
+  }
+</script>
+</body>
+</html>
